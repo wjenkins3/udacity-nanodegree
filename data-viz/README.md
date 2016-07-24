@@ -2,7 +2,7 @@
 This chart shows how NBA Hall of Fame players and the 2016 NBA All-Stars have
 progressed over their careers. It shows all-time leaders in each statistical
 category. The chart shows which 2016 All-Stars are on pace to become all-time
-leaders and/or future Hall of Famers.
+leaders and/or future Hall of Famers. The chart can be viewed [here](https://wjenkins3.github.io/udacity-nanodegree/data-viz/).
 
 # Design 
 Initial design:
