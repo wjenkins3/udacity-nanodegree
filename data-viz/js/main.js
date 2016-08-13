@@ -4,10 +4,14 @@ var viz = {
    
    data: null, // holds data to be binded
    
-   width: 850,
-   height: 200,
-   windowHeight: 400,
+   stack: null,
+   nest: null,
+   
+   width: 1220,
+   height: 470,
+   windowHeight: 620,
    margin: 50,
+   padding: 20,
    
    svg: null, // holds svg element
    
@@ -23,51 +27,46 @@ var viz = {
     filters: [{"id":"Fame","label":"Hall of Fame","v":1},
               {"id":"Star","label":"All-Star","v":2}],
     
-    sorters: [{"key":"years",    "label":"Years",
-               "sorter":function(x,y){
-                    return d3.ascending(x.career.length,y.career.length);
-               }
-              },
-              {"key":"totals",   "label":"Total",
-               "sorter":function(x,y){
-                    return d3.descending(x.totals[self.state.stat],y.totals[self.state.stat]);
-               }
-              },
-              {"key":"lastname", "label":"Name",
-               "sorter":function(x,y){
-                    return d3.descending(x.lastname, y.lastname);
-               }
-              }],
-    
-    stats_buttons: null,
+    colors: [{"color":"#FDB462", "inUse":false},
+         	 {"color":"#B3DE69", "inUse":false},
+         	 {"color":"#FCCDE5", "inUse":false},
+         	 {"color":"#BC80BD", "inUse":false},
+         	 {"color":"#8DD3C7", "inUse":false},
+         	 {"color":"#FCCD35", "inUse":false}],
+	
+	stats_buttons: null,
     filter_buttons: null,
     sorter_buttons: null,
     // save state of selected options
-    state: {"stat":null, "sort":null, "filter":null,
+    state: {"stat":null, "filter":null, "selection":null, "selections":[],
             "sorter": function() {
-               if (this.sort.key == "totals") {
-                  var key = this.stat.key;
-                  return function(x,y) { return d3.ascending(x.totals[key],y.totals[key]);};
-               }
-               else return this.sort.sorter;
-            },
-            "selection":null
+               var key = this.stat.key;
+               return function(x,y) { return d3.ascending(x.totals[key],y.totals[key]);};
+            }
            },
-    
+           
     year_scale: null,
+    cont_year_scale: null,
     tot_scale: null,
     
-    players: null, // holds binded data elements
+    players: null, // holds binded data elements (for lines and info)
+    bars: null, // holds binded data elements (for bar graph)
     tot_axis: null, // holds axis since it is subject to change based on selected stat
+    legend: null,
     
     linegen: null, // line generator
     
     // build menus and initialize properties and methods
     init: function() {
+       this.stack = d3.layout.stack();
+       this.nest = d3.nest().key(function(d){return d.career.length;}).entries(viz.data);
+           
        var self = this;
        this.svg = d3.select("#chart");
        
-       d3.select("#stats")
+       d3.select("#opers")
+         .append('div')
+         .attr('id','stats')
          .text("View: ");
          
        this.stats_buttons = d3.select("#stats")
@@ -99,11 +98,6 @@ var viz = {
           .attr('id','filter')
           .text('Filter: ');
           
-        d3.select("#opers")
-          .append("div")
-          .attr("id","sort")
-          .text("Sort by: ");
-          
         this.filter_buttons = d3.select('#filter')
             .selectAll("span")
             .data(this.filters)
@@ -130,42 +124,22 @@ var viz = {
             }
             self.update();
         });
-        
-        this.sorter_buttons = d3.select('#sort')
-            .selectAll("span")
-            .data(this.sorters)
-            .enter()
-            .append("span")
-            .html(function(d,i) {
-              var span = '<span class="button';
-              if (i==0) span += ' selected';
-              span += '">' + d.label + '</span>';
-              if (i < self.sorters.length - 1) span += ' | ';
-              return span;
-           });
-        this.state.sort = this.sorters[0];
-        this.sorter_buttons.on("click",function(d) {
-          d3.select("#sort")
-            .selectAll("span.button")
-            .classed('selected',false);
-          d3.select(this)
-            .select('span')
-            .classed('selected',true);
-          self.state.sort = d;
-          self.update();
-        });
        
        this.draw();     
     },
     // initialize chart
     draw: function() {
        var self = this;
-       this.year_scale = d3.scale.linear()
+       this.cont_year_scale = d3.scale.linear()
            .range([this.margin,this.width-this.margin])
            .domain([1,21]);
+           
+       this.year_scale = d3.scale.ordinal()
+           .rangeRoundBands([this.margin,this.width-this.margin])
+           .domain(d3.range(1,22).map(function(d) {return d;}));
         
        this.tot_scale = d3.scale.linear()
-           .range([this.height, this.margin])
+           .range([this.windowHeight, this.windowHeight-this.height])
            .domain(this.extent());
            
        var year_axis = d3.svg.axis()
@@ -177,23 +151,50 @@ var viz = {
             .orient("left");
             
        this.svg.append('g')
-           .attr('class','back axis')
-           .attr('transform',"translate("+(this.margin+2.5*(this.data.length-1))+","+((this.data.length-1)*-3.1+this.windowHeight+this.height)+")")
+           .attr('class','x axis')
+           .attr('transform',"translate("+(0.25*this.margin)+","+(this.windowHeight)+")")
            .call(year_axis);
        
        this.svg.append('g')
-           .attr('class','left axis')
-           .attr('transform',"translate("+(2.5*(this.data.length-1)+this.margin+this.year_scale(1))+","+((this.data.length-1)*-3.1+this.windowHeight)+")")
+           .attr('class','y axis')
+           .attr('transform',"translate("+(1.25*this.margin)+",0)")
            .call(this.tot_axis);
-       
+           
+       this.bars = this.svg.selectAll("rect")
+           .data(this.data, function(d) { return d ? d.ilkid : this.id;})
+           .enter()
+           .append("rect")
+           .classed('bar',true)
+           .sort(this.state.sorter())
+           .attr('transform',"translate("+(0.25*this.margin)+",0)")
+           .attr('x',function(d) {
+              var len = d.career.length - 1;
+              return self.year_scale(d.career[len].years);
+           }) 
+           .attr('y',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           })
+           .attr('width',this.year_scale.rangeBand())
+           .attr('height',function(d){
+               var len = d.career.length - 1;
+               return self.windowHeight - self.tot_scale(d.career[len][self.state.stat.key]);
+           })
+           .classed('allstar',function(d) {
+              if (d.active) return true;
+              else          return false;
+           })
+           .classed('hof',function(d) {
+              if (d.hall_of_fame) return true;
+              else                return false; 
+           });
+           
        this.players = this.svg.selectAll("g")
            .data(this.data, function(d) { return d ? d.ilkid : this.id;})
            .enter()
            .append("g")
            .sort(this.state.sorter())
-           .attr('transform', function(d,i) {
-              return "translate("+(i*2.5+self.margin)+","+(i*-3.1+self.windowHeight)+")";
-           })
+           .attr('transform',"translate("+(0.25*this.margin)+",0)")
            .classed('allstar',function(d) {
               if (d.active) return true;
               else          return false;
@@ -207,61 +208,47 @@ var viz = {
            .interpolate('cardinal')
            .x(function(d) { return this.year_scale(d.years);})
            .y(function(d) { return this.tot_scale(d[self.state.stat.key]);});
-           
-       this.players.classed('player',true)
-           .append('path')
-           .attr('d',function(d) { return self.linegen(d.career); })
-           .attr('fill','none');
-           
-       this.players
+      
+      this.players
+          .append('path')
+          .attr('d',function(d) { return self.linegen(d.career);})
+          .attr('transform',"translate("+(0.5*self.year_scale.rangeBand())+",0)")
+       	  .attr('fill','none')
+          .style('display','none');
+      
+      this.players
            .append('line')
            .classed('start',true)
            .attr('x1',this.year_scale(1))
            .attr('y1',this.tot_scale(0))
            .attr('x2',this.year_scale(1))
-           .attr('y2',function(d) { return self.tot_scale(d.career[0][self.state.stat.key]);});
-           
-       this.players
-           .append('line')
-           .classed('end',true)
-           .attr('x1',function(d) {
-              var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years);
-           })
-           .attr('y1',this.tot_scale(0))
-           .attr('x2',function(d) {
-              var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years);
-           })
-           .attr('y2',function(d) {
-              var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
-           });
+           .attr('y2',function(d) { return self.tot_scale(d.career[0][self.state.stat.key]);})
+           .attr('transform',"translate("+(0.5*self.year_scale.rangeBand())+",0)")
+           .style('display','none');
        
        this.players
-           .append('line')
-           .classed('base',true)
-           .attr('x1',function(d) {
-              var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years);
-           })
-           .attr('y1',this.tot_scale(0))
-           .attr('x2',function(d) {
-              var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years) + 7;
-           })
-           .attr('y2',this.tot_scale(0));
-       
-       this.players
+           .classed('player',true)
            .append('text')
            .classed('button',true)
            .attr('x',function(d) {
               var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years) + 10;
+              return self.year_scale(d.career[len].years);
            })
-           .attr('y',this.tot_scale(0))
+           .attr('y',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           })
            .text(function(d) { return d.firstname + " " + d.lastname; })
            .on("click",function(d) {
+              if (self.state.selections.length < 6 && self.state.selections.indexOf(d) < 0) {
+                 self.state.selections.push(d);
+                 self.updateSelections();
+              }
+              else if (-1 < self.state.selections.indexOf(undefined)) {
+                 var i = self.state.selections.indexOf(undefined);
+                 self.state.selections[i] = d;
+                 self.updateSelections();
+              }    
               if (self.state.selection == d) {
                  d3.select("#name")
                    .text("");
@@ -333,18 +320,35 @@ var viz = {
                    else            return false;
                 });
            })
-       
-       this.svg.append('g')
-           .attr('class','front axis')
-           .attr('transform',"translate("+(this.margin)+","+(this.windowHeight+this.height)+")")
-           .call(year_axis);
+       this.legend = d3.selectAll("#legend")
+           .selectAll('div')
+           .data(this.state.selections,function(d) { return d ? d.ilkid : this.id;});
            
+       this.players
+           .append('line')
+           .classed('top',true)
+           .attr('x1',function(d){
+              var len = d.career.length - 1;
+              return self.year_scale(d.career[len].years);
+           })
+       	   .attr('y1',function(d){
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           })
+       	   .attr('x2',function(d){
+              var len = d.career.length - 1;
+              return self.year_scale(d.career[len].years) + self.year_scale.rangeBand();
+           })
+       	   .attr('y2',function(d){
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           });
+       
        this.svg.append('text')
            .attr('class','label')
-           .attr('transform',"translate("+20+","+(this.windowHeight+this.height+40)+")")
+           .attr('transform',"translate("+(0.5*this.width-this.margin)+","+(this.windowHeight+40)+")")
            .text("Year (in career)");
-           
-       this.highlight();    
+               
     },
     // Find min/max of current stat for entire dataset
     extent: function() {
@@ -358,109 +362,194 @@ var viz = {
        }
        return [d3.min(min),d3.max(max)];    
     },
-    // highlight top 3 Hall of Fame leaders in statistical category
-    highlight: function() {
-       var self = this;
-       var i = 0;
-       
-       this.svg.selectAll('g.player')
-           .sort(function(x,y) {
-              return d3.descending(x.totals[self.state.stat.key],y.totals[self.state.stat.key]);
-           })
-           .classed('alltime', function(d) {
-              var alltime = false;
-              if (i < 3 && !d.active) {
-                 alltime = true;
-                 i += 1;
-              }
-              return alltime;
-           });
-    },
     // animate user selected options (sort, filter, statistic)
     update: function() {
        if (debug) console.log(this.state);
        this.tot_scale = d3.scale.linear()
-           .range([this.height, this.margin])
+           .range([this.windowHeight, this.windowHeight-this.height])
            .domain(this.extent());
            
        this.tot_axis = d3.svg.axis()
-            .scale(this.tot_scale)
-            .orient("left");
+           .scale(this.tot_scale)
+           .orient("left");
             
        var self = this;
        
-       this.svg.select('g.left')
+       this.svg.select('g.y')
            .transition()
            .duration(500)
-           .attr('transform',"translate("+(2.5*(this.data.length-1)+this.margin+this.year_scale(1))+","+((this.data.length-1)*-3.1+this.windowHeight)+")")
            .call(this.tot_axis);
-          
+       
+       this.svg.selectAll('rect')
+           .transition()
+           .duration(5000)
+           .attr('y',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           })
+           .attr('height',function(d) {
+              var len = d.career.length - 1;
+              return self.windowHeight - self.tot_scale(d.career[len][self.state.stat.key]);
+           });     
+       
        this.svg.selectAll('g.player path')
            .transition()
-           .duration(500)
-           .attr('d',function(d) { return self.linegen(d.career);}) 
+           .duration(5000)
+           .attr('d',function(d) { return self.linegen(d.career);});
        
        this.svg.selectAll('g.player line.start')
            .transition()
-           .duration(500)
+           .duration(5000)
            .attr('y2',function(d) { return self.tot_scale(d.career[0][self.state.stat.key]);}); 
        
-       this.svg.selectAll('g.player line.end')
-           .transition()
-           .duration(500)
-           .attr('y2',function(d) {
-              var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
-           });       
-            
        var plyrs = this.svg.selectAll("g.player")
           .sort(this.state.sorter())
           .classed('filter',function(d) {
               if (self.state.filter == 1 && d.active) return true;
               if (self.state.filter == 2 && !d.active) return true;
+              if (d.totals[self.state.stat.key] == 0) return true;
               return false;
-          })
-          .transition()
-          .duration(5000)
-          .attr('transform',function(d,i) {
-             return "translate("+(i*2.5+self.margin)+","+(i*-3.1+self.windowHeight)+")";
           });
+          
+       var bars = this.svg.selectAll('rect')
+           .classed('filter',function(d) {
+              if (self.state.filter == 1 && d.active) return true;
+              if (self.state.filter == 2 && !d.active) return true;
+              if (d.totals[self.state.stat.key] == 0) return true;
+              return false;
+           });
        
-       if (this.state.sort.key != 'years') {
-          this.svg.selectAll('g.player text')
-              .transition()
-              .duration(5000)
-              .attr('x',this.year_scale(22));
-          
-          this.svg.selectAll('g.player line.base')
-              .transition()
-              .duration(5000)
-              .attr('x2',this.year_scale(22) - 10);  
-       }
-       else {
-          this.svg.selectAll('g.player text')
-              .transition()
-              .duration(5000)
-              .attr('x',function(d) {
-                 var len = d.career.length - 1;
-                 return self.year_scale(d.career[len].years) + 10;
-              });
-           this.svg.selectAll('g.player line.base')
-              .transition()
-              .duration(5000)   
-              .attr('x2',function(d) {
+       this.svg.selectAll('g.player text')
+           .transition()
+           .duration(5000)
+           .attr('y',function(d) {
               var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years);
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           });       
+       
+       this.svg.selectAll('g.player line.top')
+           .transition()
+           .duration(5000)
+           .attr('y1',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
            })
-                      
-       }       
+           .attr('y2',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           });
+       
+       this.svg.selectAll('g.hof line.top')
+           .style('opacity',function(d){
+              if (self.state.filter == 1) return 1;
+              else return 0;
+           });           
           
-       this.highlight(); 
+       this.updateInfo();
+    },
+    // update lines with selected players
+    updateSelections: function () {
+       var self = this;
+       
+       this.svg.selectAll('g.player path')
+           .style('display',function(d) {
+              if (self.state.selections.indexOf(d) > -1) return "inline";
+              else return "none";
+           })
+           .attr('stroke',function(d) {
+              if (self.state.selections.indexOf(d) < 0) return 'black';
+              else return self.colors[self.state.selections.indexOf(d)].color;
+           }); 
+           
+       this.svg.selectAll('g.player line.start')
+           .style('display',function(d) {
+              if (self.state.selections.indexOf(d) > -1) return "inline";
+              else return "none";
+           })
+           .attr('stroke',function(d) {
+              if (self.state.selections.indexOf(d) < 0) return 'black';
+              else return self.colors[self.state.selections.indexOf(d)].color;
+           });
+           
+       this.legend = d3.selectAll("#legend")
+           .selectAll('div')
+           .data(this.state.selections,function(d) { return d ? d.ilkid : this.id;});
+           
+       this.legend    
+           .enter()
+           .append('div')
+           .classed('name',true)
+           .text(function(d){return d.firstname + ' ' + d.lastname + ' ';})
+           .style('border-bottom',function(d,i) {
+              return '1px solid ' + self.colors[i].color;
+           })
+           .on("mouseover",function(d) {
+              var datum = d;
+              
+              d3.select("#name")
+                .text(d.firstname + " " + d.lastname + ", " + d.position);
+              
+              d3.select("#xp")
+                .text("Experience: "  + d.career.length + " years, " + d.firstyear + "-" + d.lastyear)
+              
+              d3.select("#stat")
+                .text(function(d) {
+                   var text = "Career total: " + datum.totals[self.state.stat.key] + " " + self.state.stat.label;
+                   if (self.state.stat.label.slice(-2) == "FG") text += "s made";
+                   return text;
+                });
+              
+              d3.selectAll('g.player')
+                .classed('highlight',function(d) {
+                   if (d == datum) return true;
+                   else            return false;
+                });
+                 
+              d3.select("#link")
+                .style('display','none');
+                          
+           })
+           .on("mouseout",function(d) {
+           
+              d3.select("#name")
+                .text("");
+              
+              d3.select("#xp")
+                .text("");
+              
+              d3.select("#stat")
+                .text("");
+              
+              self.updateInfo();
+              
+              d3.selectAll('g.player')
+                .classed('highlight',false);
+                
+              d3.selectAll('g.player')
+                .classed('highlight',function(d) {
+                   if (d == self.state.selection) return true;
+                   else            return false;
+                });
+           })
+           .append('span')
+           .classed('button',true)
+           .html('&times;')
+           .on("click",function(d) {
+              var i = self.state.selections.indexOf(d);
+              self.state.selections = self.state.selections.slice(0,i).concat(self.state.selections.slice(i+1,self.state.selections.length));
+              self.colors = self.colors.slice(0,i).concat(self.colors.slice(i+1,6)).concat(self.colors.slice(i,i+1));
+              self.updateSelections();
+           });
+           
+      this.legend.exit().remove();
     },
     // update display with information of highlighted player
     updateInfo: function() {
        var self = this;
-       var d = this.state.selection;
+       
+       if (this.state.selections.length < 1) return;
+       
+       var d = this.state.selections[this.state.selections.length - 1];
        
        if (d === null) return;
               

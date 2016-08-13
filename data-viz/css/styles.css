@@ -6,12 +6,12 @@ html,body {
 body {
    margin:0px;
    background:#f6f6f6;
-   padding:20px;
+   padding:20px 0px 0px 20px;
    font-family:sans-serif;
 }
 
 #viz {
-   height:720px;
+   height:700px;
    width:1280px;
    position:fixed;
 }
@@ -21,27 +21,25 @@ body {
    height:100%;
 }
 
+#legend {
+   display:inline;
+   position:absolute;
+   font-size:12px;
+   top:125px;
+   left:625px;
+   margin:0px;
+}
+
+svg * {
+   padding:0px;
+}
+
 .axis {
 }
 
 .axis path {
    fill:none;
    stroke:#a9a9a9;
-}
-
-.front {
-   stroke:#898989;
-}
-
-.back {
-   stroke:#a9a9a9;
-}
-
-.back text {
-   display:none;
-}
-
-.tick {
 }
 
 .tick line {
@@ -56,20 +54,19 @@ body {
 .label {
    font-size:0.8em;
    font-weight:lighter;
-   fill:#898989;
+   fill:#585858;
 }
 
 .player {
-   opacity:0.5;
+   opacity:0.8;
 }
 
 .player path {
-   opacity:0.6;
-   stroke-width:0.75;
+   stroke-width:2.0;
 }
 
 .player .button {
-   font-size:4px;
+   font-size:7.5px;
 }
 
 .player .button:hover {
@@ -77,14 +74,16 @@ body {
    font-weight:bold;
 }
 
-line.start {
+.allstar line.top {
+   stroke:blue;
+}
+
+.hof line.top {
+   opacity:0;
+   stroke:#f6f6f6;
 }
 
 line.end {
-}
-
-line.base {
-   opacity:0.1;
 }
 
 .hof {
@@ -97,7 +96,7 @@ line.base {
 }
 
 .allstar {
-   stroke:blue;
+   stroke:black;
    opacity:0.8;
 }
 
@@ -106,17 +105,10 @@ line.base {
    fill:blue;
 }
 
-.alltime {
+.bar {
+   fill:#80B1D3;
    opacity:0.8;
-   stroke-width:1.5;
-}
-
-.alltime path {
-   stroke-width:2.0;
-}
-
-.alltime text {
-   font-weight:bold;
+   stroke:#f6f6f6;
 }
 
 #text {
@@ -125,7 +117,7 @@ line.base {
 
 #header {
    position:absolute;
-   width:400px;
+   width:600px;
    z-index:1;
 }
 
@@ -146,10 +138,8 @@ h3 {
 }
 
 #stats {
-   position:absolute;
+   display:inline;
    font-size:12px;
-   margin:0px 0px 0px 15px;
-   top:155px;
    width:450px;
 }
 
@@ -175,12 +165,13 @@ span.selected {
    position:absolute;
    font-size:12px;
    margin:0px 0px 0px 15px;
-   top:175px;
-   width:315px;
+   top:125px;
+   width:600px;
 }
 
 #filter {
    display:inline;
+   margin:0px 0px 0px 12px;
    width:225px;
 }
 
@@ -198,13 +189,13 @@ span.selected {
    stroke-width:2;
 }
 
-#sort {
+div.name {
    display:inline;
-   margin:0px 0px 0px 12px;
-   width:225px;
-}
-
-#Fame {
+   padding:0px 6px 0px 0px;
+   font-weight:lighter;
+   background:#f0f0f0;
+   border-right:2px solid #f6f6f6;
+   cursor:default;
 }
 
 #Star {
@@ -212,7 +203,8 @@ span.selected {
 }
 
 #info {
-   top:225px;
+   top:175px;
+   left:80px;
    margin:0px 0px 0px 15px;
    position:absolute;
    width:250px;
@@ -244,7 +236,7 @@ span.selected {
 #footer {
    position:absolute;
    width:400px;
-   top:400px;
+   top:625px;
    left:15px;
    font-size:11px;
 }

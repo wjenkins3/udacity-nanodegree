@@ -25,8 +25,29 @@ obvious the data being view was changing and the change was taking effect.
 
 - Highlighting was added to a selected player to distinguish its plot from the rest of the chart.
 
+After Feedback #1:
+
+It was too difficult to single out a single player for comparing to other players. The
+names were too small to see and it was difficult making a player selection.
+
+- To the make the names easier to read and the comparison easier, the chart was changed
+from line plots to a resemblance of stacked bar graphs. The change also makes it easier to place the
+totals for each player on the y-axis.
+
+- The font size of the player names was also increased.
+
+- For comparison of a players progress over a career, clicking on a player name will show
+the line plot of the player's stats. Up to 6 players can be selected for comparison.
+
 # Feedback
 Feedback received from others on the visualization:
+
+### Feedback #1
+It's not clear what interactive functionality is included with the chart. For instance, I
+did not know you could click on the player names for a summary of the player stats. The
+player names are too small to see, and it is difficult distinguishing an individual
+player's line. Also the Sort by options do not appear on the same line (in Internet
+Explorer).
 
 # Resources
 Inspiration: "UK Temperature History" by Peter Cook
