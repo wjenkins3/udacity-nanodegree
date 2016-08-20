@@ -14,8 +14,8 @@
     <div id="text">
        <div id="header">
           <h4>National Basketball Association</h4>
-          <h3>Hall of Fame Careers and Today's All-Stars</h3>
-          <p>This chart shows how NBA Hall of Fame players and the 2016 NBA All-Stars have progressed over their careers. Check out each statistic and compare the <span style="color:blue; font-weight:600;">All-Stars</span> to the <span style="font-weight:600;">Hall of Famers</span>. You can point out possible future inductees. Click up to 6 players to compare their careers.</p>
+          <h3>Hall of Fame Careers and Today's All-Stars <input type="checkbox" id="sumbtn"
+onchange="toggleSummary(this.checked)"/><label for="sumbtn" id="btnlabel">info</label></h3>
        </div>
        <div id="opers"></div>
        <div id="info">
@@ -26,10 +26,25 @@
              <div id="link"><a id="href" href="" target="_blank">Complete History</a></div>
           </div>
        </div>
+       <div id="summary">
+          <span id="closebtn" onclick="closeSummary()">&times;</span>
+          <p>This chart shows how NBA Hall of Fame players and the 2016 NBA All-Stars have progressed over their careers. Check out each statistic and compare the <span style="color:blue; font-weight:600;">All-Stars</span> to the <span style="font-weight:600;">Hall of Famers</span>. You can point out possible future inductees. Click up to 6 players to compare their careers.</p>
+       </div>
        <div id="footer">
           <p>Chart development by<br/><a href="https://github.com/wjenkins3/udacity-nanodegree" target="_blank">wjenkins3</a></p><p><a href="http://www.databasebasketball.com/" target="_blank">Data source 1</a><br/><a href="http://www.basketball-reference.com/" target="_blank">Data source 2</a></p>
        </div>
     </div>
+    <script>
+    function closeSummary() {
+       d3.select("#summary").style("display",null);
+       document.getElementById("sumbtn").checked = false;
+   	}
+   	
+   	function toggleSummary(val) {
+       if (val) d3.select("#summary").style("display","block");
+       else d3.select("#summary").style("display",null);
+   	}
+    </script>
     <script type="text/javascript" src="js/main.js"></script>
   </body>
 </html>
