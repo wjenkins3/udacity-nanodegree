@@ -39,6 +39,24 @@ totals for each player on the y-axis.
 - For comparison of a players progress over a career, clicking on a player name will show
 the line plot of the player's stats. Up to 6 players can be selected for comparison.
 
+After Feedback #2:
+
+Some players stand out for the different statistics, so that's good. The
+names can still be hard to see and single out, but sometimes the data points
+are really that close together. The following changes help to alleviate some of the
+difficulty and possibly enhance the experience:
+
+- The chart was made responsive to the viewport. The scale on the y-axis will spread out
+and so the names will not lay on top of each other.
+
+- The summary paragraph becomes a modal box when the screen size is small, giving more
+real estate to the chart. Now it fades out when the screen size is below the threshold.
+
+- The names were spaced out a bit from their line markers. This was causing the text to
+appear smaller when the all-stars were filtered out.
+
+- Removed the bugs in the player selection and highlighting
+
 # Feedback
 Feedback received from others on the visualization:
 
@@ -48,6 +66,13 @@ did not know you could click on the player names for a summary of the player sta
 player names are too small to see, and it is difficult distinguishing an individual
 player's line. Also the Sort by options do not appear on the same line (in Internet
 Explorer).
+
+### Feedback #2
+First of all, I really like watching the transitions. Second, Kobe!!!! And wow at Steph
+Curry and the 3FGs. However, the names are too close together. You cannot always see who
+is who. Also when the All-Stars are filtered out, the names look like they are getting
+smaller. They were already hard to see. Lastly, something weird is happening with the
+selections and the players being displayed; I can't quite explain it.
 
 # Resources
 Inspiration: "UK Temperature History" by Peter Cook

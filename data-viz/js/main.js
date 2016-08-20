@@ -8,7 +8,7 @@ var viz = {
    nest: null,
    
    width: 1220,
-   height: 470,
+   chart_top: 80,
    windowHeight: 620,
    margin: 50,
    padding: 20,
@@ -51,13 +51,23 @@ var viz = {
     
     players: null, // holds binded data elements (for lines and info)
     bars: null, // holds binded data elements (for bar graph)
-    tot_axis: null, // holds axis since it is subject to change based on selected stat
+    tot_axis: null, // holds axis since it is subject to change based on selected stat and viewport
+    year_axis: null, // holds axis since it is subject to change based on viewport
     legend: null,
     
     linegen: null, // line generator
     
     // build menus and initialize properties and methods
     init: function() {
+       var w_h = +d3.select('html').style('height').slice(0,-2);
+       this.chart_top = (w_h > 750) ? 150 : this.chart_top;
+       this.windowHeight = (w_h > 750) ? w_h - 120 : this.windowHeight;
+       
+       var w_w = +d3.select('html').style('width').slice(0,-2);
+       if (w_w > 1440) w_w = 1440;
+   	   else if (w_w < 1280) w_w = 1280;
+   	   this.width = w_w - 60;
+       
        this.stack = d3.layout.stack();
        this.nest = d3.nest().key(function(d){return d.career.length;}).entries(viz.data);
            
@@ -139,10 +149,10 @@ var viz = {
            .domain(d3.range(1,22).map(function(d) {return d;}));
         
        this.tot_scale = d3.scale.linear()
-           .range([this.windowHeight, this.windowHeight-this.height])
+           .range([this.windowHeight, this.chart_top])
            .domain(this.extent());
            
-       var year_axis = d3.svg.axis()
+       this.year_axis = d3.svg.axis()
            .scale(this.year_scale)
            .ticks(21);
            
@@ -153,7 +163,7 @@ var viz = {
        this.svg.append('g')
            .attr('class','x axis')
            .attr('transform',"translate("+(0.25*this.margin)+","+(this.windowHeight)+")")
-           .call(year_axis);
+           .call(this.year_axis);
        
        this.svg.append('g')
            .attr('class','y axis')
@@ -236,7 +246,7 @@ var viz = {
            })
            .attr('y',function(d) {
               var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
+              return self.tot_scale(d.career[len][self.state.stat.key]) - 1;
            })
            .text(function(d) { return d.firstname + " " + d.lastname; })
            .on("click",function(d) {
@@ -366,7 +376,7 @@ var viz = {
     update: function() {
        if (debug) console.log(this.state);
        this.tot_scale = d3.scale.linear()
-           .range([this.windowHeight, this.windowHeight-this.height])
+           .range([this.windowHeight, this.chart_top])
            .domain(this.extent());
            
        this.tot_axis = d3.svg.axis()
@@ -424,7 +434,7 @@ var viz = {
            .duration(5000)
            .attr('y',function(d) {
               var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
+              return self.tot_scale(d.career[len][self.state.stat.key]) - 1;
            });       
        
        this.svg.selectAll('g.player line.top')
@@ -539,6 +549,16 @@ var viz = {
               self.state.selections = self.state.selections.slice(0,i).concat(self.state.selections.slice(i+1,self.state.selections.length));
               self.colors = self.colors.slice(0,i).concat(self.colors.slice(i+1,6)).concat(self.colors.slice(i,i+1));
               self.updateSelections();
+              d3.select("#name")
+            	.text("");
+          	
+          	  d3.select("#xp")
+            	.text("");
+          	
+          	  d3.select("#stat")
+            	.text("");
+          	
+          	  self.updateInfo();
            });
            
       this.legend.exit().remove();
@@ -571,7 +591,102 @@ var viz = {
       
       d3.select('#link')
         .style('display','block');  
-    }
+    },
+    // resize chart based on viewport
+	resize: function() {
+	   var self = this;
+   	   var new_width = +d3.select("html").style("width").slice(0,-2);
+   	   var new_height = +d3.select("html").style("height").slice(0,-2);
+   	   if (debug) console.log(new_width + "x" + new_height);
+   	   if (new_width > 1440) new_width = 1440;
+   	   else if (new_width < 1280) new_width = 1280;
+   	   this.width = new_width - 60;
+   	   if (new_height < 750) {
+   	      new_height = 720;
+   	      this.chart_top = 80;
+   	   }
+   	   else this.chart_top = 150;
+   	   this.windowHeight = new_height - 120;
+   	   
+   	   this.year_scale = d3.scale.ordinal()
+           .rangeRoundBands([this.margin,this.width-this.margin])
+           .domain(d3.range(1,22).map(function(d) {return d;}));
+        
+       this.tot_scale = d3.scale.linear()
+           .range([this.windowHeight, this.chart_top])
+           .domain(this.extent());
+           
+       this.year_axis = d3.svg.axis()
+           .scale(this.year_scale)
+           .ticks(21); 
+           
+       this.svg.select('g.x')
+           .attr('transform',"translate("+(0.25*this.margin)+","+(this.windowHeight)+")")
+           .call(this.year_axis);
+           
+       this.svg.select('text.label')
+           .attr('transform',"translate("+(0.5*this.width-this.margin)+","+(this.windowHeight+40)+")");
+      
+       this.tot_axis = d3.svg.axis()
+           .scale(this.tot_scale)
+           .orient("left");
+            
+       this.svg.select('g.y')
+           .call(this.tot_axis);
+       
+       this.svg.selectAll('rect')
+           .attr('x',function(d) {
+              var len = d.career.length - 1;
+              return self.year_scale(d.career[len].years);
+           }) 
+           .attr('width',this.year_scale.rangeBand())
+           .attr('y',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           })
+           .attr('height',function(d) {
+              var len = d.career.length - 1;
+              return self.windowHeight - self.tot_scale(d.career[len][self.state.stat.key]);
+           });     
+       
+       this.svg.selectAll('g.player path')
+           .attr('d',function(d) { return self.linegen(d.career);});
+       
+       this.svg.selectAll('g.player line.start')
+           .attr('x1',this.year_scale(1))
+           .attr('y1',this.tot_scale(0))
+           .attr('x2',this.year_scale(1))
+           .attr('y2',function(d) { return self.tot_scale(d.career[0][self.state.stat.key]);});
+       
+       this.svg.selectAll('g.player text')
+           .attr('x',function(d) {
+              var len = d.career.length - 1;
+              return self.year_scale(d.career[len].years);
+           })
+           .attr('y',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]) - 1;
+           });       
+       
+       this.svg.selectAll('g.player line.top')
+           .attr('x1',function(d){
+              var len = d.career.length - 1;
+              return self.year_scale(d.career[len].years);
+           })
+       	   .attr('x2',function(d){
+              var len = d.career.length - 1;
+              return self.year_scale(d.career[len].years) + self.year_scale.rangeBand();
+           })
+       	   .attr('y1',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           })
+           .attr('y2',function(d) {
+              var len = d.career.length - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
+           });
+   	   
+	}
 };
 
 d3.json('data/player_data.json',function(d) {
@@ -579,3 +694,23 @@ d3.json('data/player_data.json',function(d) {
    viz.data = d;
    viz.init();
 });
+
+d3.select(window).on("resize", function() {
+   viz.resize();
+});
+
+if (+d3.select("html").style("height").slice(0,-2) < 750) {
+   d3.select("#summary")
+     .style("display","block")
+     .style("opacity",1)
+     .transition()
+     .duration(10000)
+     .style("opacity",0);
+     
+   setTimeout(function() {
+      d3.select("#summary")
+        .style("opacity",null)
+        .style("display",null);
+   }, 11000);
+}
+
