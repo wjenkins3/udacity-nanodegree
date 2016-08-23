@@ -4,14 +4,10 @@ var viz = {
    
    data: null, // holds data to be binded
    
-   stack: null,
-   nest: null,
-   
    width: 1220,
    chart_top: 80,
    windowHeight: 620,
    margin: 50,
-   padding: 20,
    
    svg: null, // holds svg element
    
@@ -46,7 +42,6 @@ var viz = {
            },
            
     year_scale: null,
-    cont_year_scale: null,
     tot_scale: null,
     
     players: null, // holds binded data elements (for lines and info)
@@ -67,9 +62,6 @@ var viz = {
        if (w_w > 1440) w_w = 1440;
    	   else if (w_w < 1280) w_w = 1280;
    	   this.width = w_w - 60;
-       
-       this.stack = d3.layout.stack();
-       this.nest = d3.nest().key(function(d){return d.career.length;}).entries(viz.data);
            
        var self = this;
        this.svg = d3.select("#chart");
@@ -140,9 +132,6 @@ var viz = {
     // initialize chart
     draw: function() {
        var self = this;
-       this.cont_year_scale = d3.scale.linear()
-           .range([this.margin,this.width-this.margin])
-           .domain([1,21]);
            
        this.year_scale = d3.scale.ordinal()
            .rangeRoundBands([this.margin,this.width-this.margin])
@@ -246,7 +235,7 @@ var viz = {
            })
            .attr('y',function(d) {
               var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]) - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
            })
            .text(function(d) { return d.firstname + " " + d.lastname; })
            .on("click",function(d) {
@@ -334,26 +323,6 @@ var viz = {
            .selectAll('div')
            .data(this.state.selections,function(d) { return d ? d.ilkid : this.id;});
            
-       this.players
-           .append('line')
-           .classed('top',true)
-           .attr('x1',function(d){
-              var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years);
-           })
-       	   .attr('y1',function(d){
-              var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
-           })
-       	   .attr('x2',function(d){
-              var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years) + self.year_scale.rangeBand();
-           })
-       	   .attr('y2',function(d){
-              var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
-           });
-       
        this.svg.append('text')
            .attr('class','label')
            .attr('transform',"translate("+(0.5*this.width-this.margin)+","+(this.windowHeight+40)+")")
@@ -434,27 +403,9 @@ var viz = {
            .duration(5000)
            .attr('y',function(d) {
               var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]) - 1;
+              return self.tot_scale(d.career[len][self.state.stat.key]);
            });       
        
-       this.svg.selectAll('g.player line.top')
-           .transition()
-           .duration(5000)
-           .attr('y1',function(d) {
-              var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
-           })
-           .attr('y2',function(d) {
-              var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
-           });
-       
-       this.svg.selectAll('g.hof line.top')
-           .style('opacity',function(d){
-              if (self.state.filter == 1) return 1;
-              else return 0;
-           });           
-          
        this.updateInfo();
     },
     // update lines with selected players
@@ -665,27 +616,8 @@ var viz = {
            })
            .attr('y',function(d) {
               var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]) - 1;
-           });       
-       
-       this.svg.selectAll('g.player line.top')
-           .attr('x1',function(d){
-              var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years);
-           })
-       	   .attr('x2',function(d){
-              var len = d.career.length - 1;
-              return self.year_scale(d.career[len].years) + self.year_scale.rangeBand();
-           })
-       	   .attr('y1',function(d) {
-              var len = d.career.length - 1;
               return self.tot_scale(d.career[len][self.state.stat.key]);
-           })
-           .attr('y2',function(d) {
-              var len = d.career.length - 1;
-              return self.tot_scale(d.career[len][self.state.stat.key]);
-           });
-   	   
+           });   	   
 	}
 };
 

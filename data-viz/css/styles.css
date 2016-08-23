@@ -78,15 +78,6 @@ svg * {
    font-weight:bold;
 }
 
-.allstar line.top {
-   stroke:blue;
-}
-
-.hof line.top {
-   opacity:0;
-   stroke:#f6f6f6;
-}
-
 line.end {
 }
 
@@ -110,9 +101,10 @@ line.end {
 }
 
 .bar {
-   fill:#80B1D3;
-   opacity:0.8;
-   stroke:#f6f6f6;
+   fill:#80B180;
+   opacity:0.75;
+   stroke:#9FC59F;
+   stroke-opacity:0.6;
 }
 
 #text {

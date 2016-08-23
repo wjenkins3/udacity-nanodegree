@@ -57,6 +57,12 @@ appear smaller when the all-stars were filtered out.
 
 - Removed the bugs in the player selection and highlighting
 
+After Feedback #3:
+
+- Changed the color of the bars
+
+- Removed the blue and white lines under the names (they didn't add any value)
+
 # Feedback
 Feedback received from others on the visualization:
 
@@ -73,6 +79,13 @@ Curry and the 3FGs. However, the names are too close together. You cannot always
 is who. Also when the All-Stars are filtered out, the names look like they are getting
 smaller. They were already hard to see. Lastly, something weird is happening with the
 selections and the players being displayed; I can't quite explain it.
+
+### Feedback #3
+I notice the relationship between players, the relationship between Hall of Famers and
+potential future Hall of Famers. Barring injury or any other unforeseen circumstances the
+blue names at the top of the bars should go on to become Hall of Famers. The chart does
+show how the players progressed over the years. I like the transitions. One little
+critique, though: the blue names on top of the blue bars can make it a little difficult to see.
 
 # Resources
 Inspiration: "UK Temperature History" by Peter Cook
