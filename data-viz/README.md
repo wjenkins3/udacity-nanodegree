@@ -2,7 +2,9 @@
 This chart shows how NBA Hall of Fame players and the 2016 NBA All-Stars have
 progressed over their careers. It shows all-time leaders in each statistical
 category. The chart shows which 2016 All-Stars are on pace to become all-time
-leaders and/or future Hall of Famers. The chart can be viewed [here](https://wjenkins3.github.io/udacity-nanodegree/data-viz/).
+leaders and/or future Hall of Famers. There are current All-Stars that already outperform
+previous Hall of Famers. The chart can be viewed
+[here](https://wjenkins3.github.io/udacity-nanodegree/data-viz/).
 
 # Design 
 Initial design:
@@ -25,6 +27,13 @@ obvious the data being view was changing and the change was taking effect.
 
 - Highlighting was added to a selected player to distinguish its plot from the rest of the chart.
 
+End Result:
+1. Multi-series line plot (statistic totals vs career-year)
+2. Color encodings for player type (blue for All-Stars, black for Hall of Famers)
+3. Changeable y-axis plots and scales
+
+<img src="https://github.com/wjenkins3/udacity-nanodegree/raw/master/data-viz/images/initial.png" width="800" height="500">
+
 After Feedback #1:
 
 It was too difficult to single out a single player for comparing to other players. The
@@ -38,6 +47,11 @@ totals for each player on the y-axis.
 
 - For comparison of a players progress over a career, clicking on a player name will show
 the line plot of the player's stats. Up to 6 players can be selected for comparison.
+
+End Result (differences): 
+1. Bar chart (replaces multi-series line plot)
+2. Player selection displays line plot showing career progression
+3. Color encodings for player selections (up to six)
 
 After Feedback #2:
 
@@ -63,6 +77,20 @@ After Feedback #3:
 
 - Removed the blue and white lines under the names (they didn't add any value)
 
+End Result (differences):
+1. Contrasting colors for bars and display names
+
+<img src="https://github.com/wjenkins3/udacity-nanodegree/raw/master/data-viz/images/after3.png" width="800" height="500">
+
+After Feedback #4:
+Overlapping names are still a problem so the bars will be removed and points will be placed next to the names.
+
+End Result (differences):
+1. Scatterplot for players' statistics (replaces bar chart)
+2. Names that overlap have been removed
+3. The points are clickable and hovering over the dots displays the name
+
+
 # Feedback
 Feedback received from others on the visualization:
 
@@ -86,6 +114,13 @@ potential future Hall of Famers. Barring injury or any other unforeseen circumst
 blue names at the top of the bars should go on to become Hall of Famers. The chart does
 show how the players progressed over the years. I like the transitions. One little
 critique, though: the blue names on top of the blue bars can make it a little difficult to see.
+
+### Feedback #4
+While exploring the different statistics, I noticed that some of the player names overlap.
+This makes it difficult to see and click on the right player for comparison. I get the
+feeling that this might be somewhat difficult to change but this really hinders the
+visualization. In some cases, the player names overlap to the point that neither is
+readable.
 
 # Resources
 Inspiration: "UK Temperature History" by Peter Cook
