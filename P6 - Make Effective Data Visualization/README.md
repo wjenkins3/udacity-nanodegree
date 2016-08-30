@@ -32,7 +32,7 @@ End Result:
 2. Color encodings for player type (blue for All-Stars, black for Hall of Famers)
 3. Changeable y-axis plots and scales
 
-<img src="https://github.com/wjenkins3/udacity-nanodegree/raw/master/data-viz/images/initial.png" width="800" height="500">
+<img src="https://github.com/wjenkins3/udacity-nanodegree/raw/master/P6%20-%20Make%20Effective%20Data%20Visualization/images/initial.png" width="800" height="500">
 
 After Feedback #1:
 
@@ -80,7 +80,7 @@ After Feedback #3:
 End Result (differences):
 1. Contrasting colors for bars and display names
 
-<img src="https://github.com/wjenkins3/udacity-nanodegree/raw/master/data-viz/images/after3.png" width="800" height="500">
+<img src="https://github.com/wjenkins3/udacity-nanodegree/raw/master/P6%20-%20Make%20Effective%20Data%20Visualization/images/after3.png" width="800" height="500">
 
 After Feedback #4:
 Overlapping names are still a problem so the bars will be removed and points will be placed next to the names.
