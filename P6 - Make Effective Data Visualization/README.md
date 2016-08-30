@@ -4,7 +4,7 @@ progressed over their careers. It shows all-time leaders in each statistical
 category. The chart shows which 2016 All-Stars are on pace to become all-time
 leaders and/or future Hall of Famers. There are current All-Stars that already outperform
 previous Hall of Famers. The chart can be viewed
-[here](https://wjenkins3.github.io/udacity-nanodegree/data-viz/).
+[here](https://wjenkins3.github.io/udacity-nanodegree/P6%20-%20Make%20Effective%20Data%20Visualization/).
 
 # Design 
 Initial design:
