@@ -1,4 +1,4 @@
-<img src=https://github.com/wjenkins3/udacity-nanodegree/raw/master/udacity-dand-certificate.png" width="800" height="600">
+<img src="https://github.com/wjenkins3/udacity-nanodegree/raw/master/udacity-dand-certificate.png" width="800" height="600">
 
 This repository contains project work for the Udacity Data Analyst Nanodegree program.
 
